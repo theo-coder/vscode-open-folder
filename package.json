@@ -25,6 +25,7 @@
 	"repository": {
 		"url": "https://github.com/theo-coder/vscode-open-folder"
 	},
+	"publisher": "theo-coder",
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",
 		"compile": "tsc -p ./",
