@@ -17,6 +17,10 @@ const isFileOrFolder = (path: string) => {
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("open-folder.open", async () => {
+      const showFiles = vscode.workspace
+        .getConfiguration()
+        .get<boolean>("open-folder.filesEnabled");
+
       const quickPick = vscode.window.createQuickPick();
 
       const workspacePath = vscode.workspace.workspaceFolders
@@ -33,7 +37,14 @@ export function activate(context: vscode.ExtensionContext) {
 
         const files = fs
           .readdirSync(value)
-          .filter((file) => file.startsWith(search));
+          .filter((file) => file.startsWith(search))
+          .filter((file) => {
+            if (!showFiles) {
+              return isFileOrFolder(dir + "/" + file) === "folder";
+            } else {
+              return true;
+            }
+          });
 
         quickPick.items = files.map((file) => ({
           label: dir + "/" + file,
@@ -59,7 +70,14 @@ export function activate(context: vscode.ExtensionContext) {
               vscode.window.showTextDocument(doc);
             });
         } else {
-          quickPick.value = selection[0].label + "/";
+          if (!showFiles) {
+            vscode.commands.executeCommand(
+              "vscode.openFolder",
+              vscode.Uri.parse("file://" + selection[0].label)
+            );
+          } else {
+            quickPick.value = selection[0].label + "/";
+          }
         }
       });
 
