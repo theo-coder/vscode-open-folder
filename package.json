@@ -2,7 +2,7 @@
   "name": "vsc-open-folder",
   "displayName": "open-folder",
   "description": "",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.75.0"
   },
@@ -15,7 +15,19 @@
       {
         "category": "Open-folder",
         "command": "open-folder.open",
-        "title": "Open"
+        "title": "Open the picker"
+      },
+      {
+        "category": "Open-folder",
+        "command": "open-folder.select-folder",
+        "title": "Select the focused folder"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "open-folder.select-folder",
+        "key": "ctrl+[period] ctrl+[period]",
+        "when": "inQuickOpen"
       }
     ],
     "configuration": {

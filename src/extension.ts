@@ -15,13 +15,15 @@ const isFileOrFolder = (path: string) => {
 };
 
 export function activate(context: vscode.ExtensionContext) {
+  let quickPick: vscode.QuickPick<vscode.QuickPickItem> | undefined;
+
   context.subscriptions.push(
     vscode.commands.registerCommand("open-folder.open", async () => {
       const showFiles = vscode.workspace
         .getConfiguration()
         .get<boolean>("open-folder.filesEnabled");
 
-      const quickPick = vscode.window.createQuickPick();
+      quickPick = vscode.window.createQuickPick();
 
       const workspacePath = vscode.workspace.workspaceFolders
         ? vscode.workspace.workspaceFolders[0].uri.path
@@ -46,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
             }
           });
 
-        quickPick.items = files.map((file) => ({
+        quickPick!.items = files.map((file) => ({
           label: dir + "/" + file,
           buttons: [
             isFileOrFolder(dir + "/" + file) === "file"
@@ -76,7 +78,7 @@ export function activate(context: vscode.ExtensionContext) {
               vscode.Uri.parse("file://" + selection[0].label)
             );
           } else {
-            quickPick.value = selection[0].label + "/";
+            quickPick!.value = selection[0].label + "/";
           }
         }
       });
@@ -95,6 +97,31 @@ export function activate(context: vscode.ExtensionContext) {
       });
 
       quickPick.show();
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("open-folder.select-folder", () => {
+      if (quickPick && quickPick.activeItems.length > 0) {
+        const selectedItem = quickPick.activeItems[0];
+        const button = selectedItem.buttons
+          ? selectedItem.buttons[0]
+          : undefined;
+        if (button) {
+          button.tooltip === "Open file"
+            ? vscode.workspace
+                .openTextDocument(
+                  vscode.Uri.parse("file://" + selectedItem.label)
+                )
+                .then((doc) => {
+                  vscode.window.showTextDocument(doc);
+                })
+            : vscode.commands.executeCommand(
+                "vscode.openFolder",
+                vscode.Uri.parse("file://" + selectedItem.label)
+              );
+        }
+      }
     })
   );
 }
